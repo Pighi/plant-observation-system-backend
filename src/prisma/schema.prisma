@@ -1,0 +1,51 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           Int           @id @default(autoincrement())
+  name         String
+  email        String        @unique
+  password     String
+  role         Role          @default(STUDENT)
+  createdAt    DateTime      @default(now())
+  plants       Plant[]       @relation("AssignedPlants")
+  observations Observation[]
+}
+
+model Plant {
+  id             Int          @id @default(autoincrement())
+  name           String
+  scientificName String?
+  startDate      DateTime
+  assignedToId   Int?
+  assignedTo     User?        @relation(fields: [assignedToId], references: [id], name: "AssignedPlants")
+  observations   Observation[]
+  createdAt      DateTime     @default(now())
+}
+
+model Observation {
+  id         Int      @id @default(autoincrement())
+  plantId    Int
+  studentId  Int
+  date       DateTime
+  heightCm   Float
+  leafCount  Int
+  color      String?
+  notes      String?
+  imageUrl   String?
+  createdAt  DateTime @default(now())
+
+  plant   Plant @relation(fields: [plantId], references: [id])
+  student User  @relation(fields: [studentId], references: [id])
+}
+
+enum Role {
+  STUDENT
+  ADMIN
+}
